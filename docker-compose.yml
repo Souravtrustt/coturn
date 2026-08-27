@@ -1,0 +1,39 @@
+services:
+  coturn:
+    build:
+      context: .
+      dockerfile: docker/coturn/debian/Dockerfile
+    image: coturn-local
+    # coturn-local only ever exists locally (built from build: above) -
+    # never attempt to pull it from a registry, e.g. on `docker compose up`
+    # without --build.
+    pull_policy: build
+    container_name: coturn
+    restart: unless-stopped
+    # the image's default CMD never passes -c, and coturn's compiled-in
+    # default config path is a relative "turnserver.conf" - so the mounted
+    # conf below needs to be pointed to explicitly, or it's silently
+    # ignored.
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+    volumes:
+      - /etc/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - /apps/applogs/common:/var/log/coturn
+    ports:
+      # STUN/TURN
+      - "3478:3478"
+      - "3478:3478/udp"
+      # STUN/TURN over TLS/DTLS
+      - "5349:5349"
+      - "5349:5349/udp"
+      # Relay ports - uncomment and narrow the range to what you actually
+      # need (min-port/max-port in turnserver.conf), a full 49152-65535
+      # publish is slow to start and binds a huge range on the host.
+      # - "49152-65535:49152-65535"
+      # - "49152-65535:49152-65535/udp"
+    # small cap: only catches crash output before the log file above takes
+    # over - the real log lives in /apps/applogs/common/turnserver.log
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
