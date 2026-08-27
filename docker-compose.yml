@@ -11,12 +11,12 @@ services:
     container_name: coturn
     restart: unless-stopped
     # the image's default CMD never passes -c, and coturn's compiled-in
-    # default config path is a relative "turnserver.conf", not
-    # /etc/turnserver.conf - so the mounted conf below needs to be pointed
-    # to explicitly, or it's silently ignored.
-    command: ["-c", "/etc/turnserver.conf"]
+    # default config path is a relative "turnserver.conf" - so the mounted
+    # conf below needs to be pointed to explicitly, or it's silently
+    # ignored.
+    command: ["-c", "/etc/coturn/turnserver.conf"]
     volumes:
-      - /etc/turnserver.conf:/etc/turnserver.conf:ro
+      - /etc/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
       - /apps/applogs/common:/var/log/coturn
     ports:
       # STUN/TURN
